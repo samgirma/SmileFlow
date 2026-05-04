@@ -17,6 +17,44 @@
  * - Uncomment the fetch() calls
  * - Ensure CORS is configured on the Laravel side
  * =============================================================
+ *
+ * AXIOS INTERCEPTOR SETUP (for PHP integration):
+ * =============================================================
+ *
+ * When switching from fetch() to Axios, set up interceptors like this:
+ *
+ * import axios from 'axios';
+ *
+ * const api = axios.create({ baseURL: BASE_URL });
+ *
+ * // REQUEST INTERCEPTOR — auto-attach JWT Bearer token
+ * api.interceptors.request.use((config) => {
+ *   const token = localStorage.getItem('sf_token');
+ *   if (token) {
+ *     config.headers.Authorization = `Bearer ${token}`;
+ *   }
+ *   return config;
+ * });
+ *
+ * // RESPONSE INTERCEPTOR — handle auth failures
+ * // The PHP backend returns 401 when the JWT is expired/invalid,
+ * // and 403 Forbidden when the token's role doesn't have permission
+ * // for the requested resource (e.g., a 'patient' role calling
+ * // DELETE /api/admin/users). The frontend should redirect accordingly.
+ * api.interceptors.response.use(
+ *   (response) => response,
+ *   (error) => {
+ *     if (error.response?.status === 401) {
+ *       localStorage.removeItem('sf_token');
+ *       window.location.href = '/login';
+ *     }
+ *     if (error.response?.status === 403) {
+ *       window.location.href = '/unauthorized';
+ *     }
+ *     return Promise.reject(error);
+ *   }
+ * );
+ *
  */
 
 import { mockPatients, mockAppointments, mockWorkflowItems, mockTreatmentPlans } from './mock-data';
