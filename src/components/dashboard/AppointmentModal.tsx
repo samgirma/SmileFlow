@@ -56,12 +56,8 @@ export function AppointmentModal({ open, onOpenChange }: AppointmentModalProps) 
   });
 
   const onSubmit = async (data: AppointmentFormData) => {
-    /**
-     * TODO [PHP]: This serializes the form data as JSON
-     * and sends it to POST /api/appointments via the apiService.
-     * Laravel expects: { patient_name, date, time, duration, type, dentist_id, notes }
-     */
-    await createAppointment(data);
+    // TODO [PHP]: Sends JSON to POST /api/appointments via apiService
+    await createAppointment(data as unknown as Record<string, unknown>);
     reset();
     onOpenChange(false);
   };
