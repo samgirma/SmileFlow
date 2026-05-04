@@ -58,9 +58,7 @@
  */
 
 import { mockPatients, mockAppointments, mockWorkflowItems, mockTreatmentPlans } from './mock-data';
-
-// TODO [PHP]: Replace with your Laravel API base URL
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import config from './config/env';
 
 /**
  * Get the stored JWT token.
@@ -68,7 +66,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api
  */
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('sf_token');
+  return localStorage.getItem(config.auth.tokenStorageKey);
 }
 
 /**
@@ -95,27 +93,54 @@ function getHeaders(): Record<string, string> {
  * TODO [PHP]: Uncomment this when connecting to the Laravel backend.
  */
 async function _apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      ...getHeaders(),
-      ...(options.headers || {}),
-    },
-  });
-
-  // Handle 401 - redirect to login (token expired)
-  if (response.status === 401) {
-    localStorage.removeItem('sf_token');
-    window.location.href = '/login';
-    throw new Error('Session expired');
+  // Log requests in development mode
+  if (config.development.logRequests) {
+    console.log(`📡 API Request: ${config.api.baseUrl}${endpoint}`, options);
   }
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Network error' }));
-    throw new Error(error.message || `API Error: ${response.status}`);
-  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), config.api.timeout);
 
-  return response.json();
+  try {
+    const response = await fetch(`${config.api.baseUrl}${endpoint}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        ...getHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    // Log responses in development mode
+    if (config.development.logRequests) {
+      console.log(`📡 API Response: ${response.status} ${endpoint}`);
+    }
+
+    // Handle 401 - redirect to login (token expired)
+    if (response.status === 401) {
+      localStorage.removeItem(config.auth.tokenStorageKey);
+      localStorage.removeItem(config.auth.userStorageKey);
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Network error' }));
+      throw new Error(error.message || `API Error: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout');
+    }
+    
+    throw error;
+  }
 }
 
 /**
@@ -196,14 +221,23 @@ export async function fetchTreatmentPlans(patientId?: string) {
  * TODO [PHP]: Uncomment and use real endpoint
  */
 export async function login(email: string, _password: string) {
-  // TODO [PHP]: const res = await _apiFetch('/auth/login', {
+  if (config.development.mockApi) {
+    // Mock implementation for development
+    console.log('[API] POST /auth/login', { email });
+    const mockToken = 'mock-jwt-token-' + Date.now();
+    localStorage.setItem(config.auth.tokenStorageKey, mockToken);
+    return mockDelay({ token: mockToken, user: { email, name: 'Dr. Smith' } });
+  }
+
+  // TODO [PHP]: const res = await _apiFetch(config.api.authEndpoint, {
   //   method: 'POST',
   //   body: JSON.stringify({ email, password }),
   // });
-  // localStorage.setItem('sf_token', res.token);
+  // localStorage.setItem(config.auth.tokenStorageKey, res.token);
   // return res;
+  
   console.log('[API] POST /auth/login', { email });
   const mockToken = 'mock-jwt-token-' + Date.now();
-  localStorage.setItem('sf_token', mockToken);
+  localStorage.setItem(config.auth.tokenStorageKey, mockToken);
   return mockDelay({ token: mockToken, user: { email, name: 'Dr. Smith' } });
 }

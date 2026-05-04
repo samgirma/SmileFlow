@@ -1,21 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { aiService, type AIMessage, type AIResponse } from '@/lib/services/ai-service';
+import config from '@/lib/config/env';
 
 export function GlassAIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<AIMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Initialize with welcome message
+  useEffect(() => {
+    if (messages.length === 0) {
+      const welcomeMessage: AIMessage = {
+        id: 'welcome',
+        role: 'assistant',
+        content: '👋 Welcome to SmileFlow AI. Ask me about our services, pricing, or dentists. (RAG Context Loaded)',
+        timestamp: Date.now(),
+        metadata: {
+          confidence: 1.0,
+          model: config.ai.model,
+        }
+      };
+      setMessages([welcomeMessage]);
+    }
+  }, []);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      // TODO: Implement RAG/LLM logic here
-      console.log('Sending message:', message);
-      setMessage('');
+  const handleSendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+
+    const userMessage: AIMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: message,
+      timestamp: Date.now(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setMessage('');
+    setIsLoading(true);
+    setIsTyping(true);
+
+    try {
+      const response: AIResponse = await aiService.sendMessage(message, 'dental_services');
+      
+      const assistantMessage: AIMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response.message,
+        timestamp: Date.now(),
+        metadata: {
+          confidence: response.confidence,
+          sources: response.sources,
+          model: config.ai.model,
+        }
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('AI Service Error:', error);
+      
+      const errorMessage: AIMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'I apologize, but I\'m having trouble connecting right now. Please try again later or contact our office directly.',
+        timestamp: Date.now(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+      setIsTyping(false);
     }
   };
 

@@ -19,6 +19,7 @@
  */
 
 import { create } from 'zustand';
+import config from './config/env';
 
 /** Supported RBAC roles — must match PHP backend's Role enum */
 export type UserRole = 'admin' | 'dentist' | 'receptionist' | 'patient';
@@ -109,8 +110,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
 
     const mockToken = `mock-jwt-${entry.user.role}-${Date.now()}`;
-    localStorage.setItem('sf_token', mockToken);
-    localStorage.setItem('sf_user', JSON.stringify(entry.user));
+    localStorage.setItem(config.auth.tokenStorageKey, mockToken);
+    localStorage.setItem(config.auth.userStorageKey, JSON.stringify(entry.user));
 
     set({
       user: entry.user,
@@ -121,8 +122,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('sf_token');
-    localStorage.removeItem('sf_user');
+    localStorage.removeItem(config.auth.tokenStorageKey);
+    localStorage.removeItem(config.auth.userStorageKey);
     set({ user: null, isAuthenticated: false, userRole: null, isLoading: false });
   },
 
@@ -130,10 +131,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     /**
      * TODO [PHP]: Validate the stored token against the backend:
      *
-     * const token = localStorage.getItem('sf_token');
+     * const token = localStorage.getItem(config.auth.tokenStorageKey);
      * if (!token) { set({ isLoading: false }); return; }
      *
-     * const res = await fetch(`${BASE_URL}/auth/me`, {
+     * const res = await fetch(`${config.api.baseUrl}/auth/me`, {
      *   headers: { Authorization: `Bearer ${token}` },
      * });
      *
@@ -141,12 +142,12 @@ export const useAuthStore = create<AuthState>((set) => ({
      *   const { user } = await res.json();
      *   set({ user, isAuthenticated: true, userRole: user.role, isLoading: false });
      * } else {
-     *   localStorage.removeItem('sf_token');
+     *   localStorage.removeItem(config.auth.tokenStorageKey);
      *   set({ isLoading: false });
      * }
      */
-    const stored = localStorage.getItem('sf_user');
-    const token = localStorage.getItem('sf_token');
+    const stored = localStorage.getItem(config.auth.userStorageKey);
+    const token = localStorage.getItem(config.auth.tokenStorageKey);
 
     if (stored && token) {
       try {

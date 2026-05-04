@@ -4,6 +4,7 @@ import { ScrollProgress } from './ScrollProgress';
 import { TransparentNavbar } from './TransparentNavbar';
 import { GlassAIAssistant } from './GlassAIAssistant';
 import { ScrollytellingFooter } from './ScrollytellingFooter';
+import config from '@/lib/config/env';
 
 const sections = [
   {
@@ -11,7 +12,7 @@ const sections = [
     title: 'SmileFlow: The Future of Dental Care',
     subtitle: 'Welcome to Excellence',
     description: 'Experience revolutionary dental care where cutting-edge technology meets compassionate service. Transform your smile with our advanced treatments and personalized approach.',
-    backgroundImage: 'https://images.unsplash.com/photo-1600988372567-cf7ca626ee2c?w=1920&h=1080&fit=crop&crop=center',
+    backgroundImage: `${config.media.placeholderUrl}/photo-1600988372567-cf7ca626ee2c?w=1920&h=1080&fit=crop&crop=center`,
     buttonText: 'Begin Your Journey'
   },
   {
@@ -19,7 +20,7 @@ const sections = [
     title: 'Smart Preventative Care',
     subtitle: 'Protect Your Smile',
     description: 'Proactive dental health management using AI-powered diagnostics and personalized prevention plans. Catch issues before they start with our comprehensive preventative care program.',
-    backgroundImage: 'https://images.unsplash.com/photo-1600988372567-cf7ca626ee2c?w=1920&h=1080&fit=crop&crop=center',
+    backgroundImage: `${config.media.placeholderUrl}/photo-1588772693542-3ccbee69a45a?w=1920&h=1080&fit=crop&crop=center`,
     buttonText: 'Explore Prevention'
   },
   {
@@ -27,7 +28,7 @@ const sections = [
     title: 'Aesthetic Excellence',
     subtitle: 'Perfect Your Smile',
     description: 'Unlock your confidence with our world-class cosmetic dentistry. From subtle enhancements to complete smile makeovers, our artists craft perfection with every procedure.',
-    backgroundImage: 'https://images.unsplash.com/photo-1600988372567-cf7ca626ee2c?w=1920&h=1080&fit=crop&crop=center',
+    backgroundImage: `${config.media.placeholderUrl}/photo-1600988372567-cf7ca626ee2c?w=1920&h=1080&fit=crop&crop=center`,
     buttonText: 'Discover Aesthetics'
   },
   {
@@ -35,7 +36,7 @@ const sections = [
     title: '24/7 Clinical Support',
     subtitle: 'Always Here For You',
     description: 'Dental emergencies don\'t wait, and neither do we. Our round-the-clock emergency care team is ready to provide immediate relief and expert treatment when you need us most.',
-    backgroundImage: 'https://images.unsplash.com/photo-1600988372567-cf7ca626ee2c?w=1920&h=1080&fit=crop&crop=center',
+    backgroundImage: `${config.media.placeholderUrl}/photo-1576091160550-2173dba999ef?w=1920&h=1080&fit=crop&crop=center`,
     buttonText: 'Get Emergency Care'
   }
 ];
