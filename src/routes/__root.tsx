@@ -1,7 +1,10 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ClinicSidebar } from "@/components/layout/ClinicSidebar";
 import { TopBar } from "@/components/layout/TopBar";
+import { useAuthStore, type UserRole } from "@/lib/auth-store";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 
@@ -26,6 +29,35 @@ function NotFoundComponent() {
     </div>
   );
 }
+
+/**
+ * =============================================================
+ * Route-level RBAC configuration
+ * =============================================================
+ *
+ * Maps each route path to the roles allowed to access it.
+ * Routes not listed here are accessible to any authenticated user.
+ *
+ * TODO [PHP]: This is a UX-only guard. The PHP backend MUST enforce
+ * the same permissions via middleware. If the backend returns 403
+ * Forbidden, the Axios interceptor should redirect to /unauthorized.
+ * =============================================================
+ */
+const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
+  '/user-management': ['admin'],
+  '/settings': ['admin'],
+  '/audit-logs': ['admin'],
+  '/my-appointments': ['dentist'],
+  '/ehr': ['dentist'],
+  '/check-in': ['receptionist'],
+  '/billing': ['receptionist'],
+  '/my-bookings': ['patient'],
+  '/medical-records': ['patient'],
+  '/payments': ['patient'],
+};
+
+/** Public routes that don't require authentication */
+const PUBLIC_ROUTES = ['/login', '/unauthorized'];
 
 export const Route = createRootRoute({
   head: () => ({
@@ -68,6 +100,60 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const { isAuthenticated, userRole, isLoading, checkAuth } = useAuthStore();
+  const navigate = useNavigate();
+  const currentPath = useRouterState({ select: (s) => s.location.pathname });
+
+  // Restore session from localStorage on mount
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Auth & RBAC guard
+  useEffect(() => {
+    if (isLoading) return;
+
+    const isPublic = PUBLIC_ROUTES.includes(currentPath);
+
+    // Redirect unauthenticated users to /login
+    if (!isAuthenticated && !isPublic) {
+      navigate({ to: '/login' });
+      return;
+    }
+
+    // Redirect authenticated users away from /login
+    if (isAuthenticated && currentPath === '/login') {
+      navigate({ to: '/' });
+      return;
+    }
+
+    // Check role-based access
+    if (isAuthenticated && userRole) {
+      const allowedRoles = ROUTE_PERMISSIONS[currentPath];
+      if (allowedRoles && !allowedRoles.includes(userRole)) {
+        navigate({ to: '/unauthorized' });
+      }
+    }
+  }, [isLoading, isAuthenticated, userRole, currentPath, navigate]);
+
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  // Public pages (login, unauthorized) render without sidebar
+  if (PUBLIC_ROUTES.includes(currentPath)) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Outlet />
+      </main>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
