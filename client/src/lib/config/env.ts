@@ -48,8 +48,8 @@ const getEnvList = (key: string, defaultValue: string[] = []): string[] => {
 export const config = {
   // API Configuration
   api: {
-    baseUrl: getEnvVar('VITE_API_BASE_URL', 'http://localhost:8000/api'),
-    timeout: getEnvNumber('VITE_API_TIMEOUT', 30000),
+    baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+    timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
     authEndpoint: getEnvVar('VITE_AUTH_ENDPOINT', '/auth'),
   },
 
