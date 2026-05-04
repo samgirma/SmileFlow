@@ -10,15 +10,36 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkflowRouteImport } from './routes/workflow'
+import { Route as UserManagementRouteImport } from './routes/user-management'
+import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as TreatmentsRouteImport } from './routes/treatments'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as MyBookingsRouteImport } from './routes/my-bookings'
+import { Route as MyAppointmentsRouteImport } from './routes/my-appointments'
+import { Route as MedicalRecordsRouteImport } from './routes/medical-records'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as EhrRouteImport } from './routes/ehr'
+import { Route as CheckInRouteImport } from './routes/check-in'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as BillingRouteImport } from './routes/billing'
+import { Route as AuditLogsRouteImport } from './routes/audit-logs'
 import { Route as IndexRouteImport } from './routes/index'
 
 const WorkflowRoute = WorkflowRouteImport.update({
   id: '/workflow',
   path: '/workflow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserManagementRoute = UserManagementRouteImport.update({
+  id: '/user-management',
+  path: '/user-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnauthorizedRoute = UnauthorizedRouteImport.update({
+  id: '/unauthorized',
+  path: '/unauthorized',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TreatmentsRoute = TreatmentsRouteImport.update({
@@ -31,14 +52,59 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientsRoute = PatientsRouteImport.update({
   id: '/patients',
   path: '/patients',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MyBookingsRoute = MyBookingsRouteImport.update({
+  id: '/my-bookings',
+  path: '/my-bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyAppointmentsRoute = MyAppointmentsRouteImport.update({
+  id: '/my-appointments',
+  path: '/my-appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MedicalRecordsRoute = MedicalRecordsRouteImport.update({
+  id: '/medical-records',
+  path: '/medical-records',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EhrRoute = EhrRouteImport.update({
+  id: '/ehr',
+  path: '/ehr',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckInRoute = CheckInRouteImport.update({
+  id: '/check-in',
+  path: '/check-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingRoute = BillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditLogsRoute = AuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,62 +115,139 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/billing': typeof BillingRoute
   '/calendar': typeof CalendarRoute
+  '/check-in': typeof CheckInRoute
+  '/ehr': typeof EhrRoute
+  '/login': typeof LoginRoute
+  '/medical-records': typeof MedicalRecordsRoute
+  '/my-appointments': typeof MyAppointmentsRoute
+  '/my-bookings': typeof MyBookingsRoute
   '/patients': typeof PatientsRoute
+  '/payments': typeof PaymentsRoute
   '/settings': typeof SettingsRoute
   '/treatments': typeof TreatmentsRoute
+  '/unauthorized': typeof UnauthorizedRoute
+  '/user-management': typeof UserManagementRoute
   '/workflow': typeof WorkflowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/billing': typeof BillingRoute
   '/calendar': typeof CalendarRoute
+  '/check-in': typeof CheckInRoute
+  '/ehr': typeof EhrRoute
+  '/login': typeof LoginRoute
+  '/medical-records': typeof MedicalRecordsRoute
+  '/my-appointments': typeof MyAppointmentsRoute
+  '/my-bookings': typeof MyBookingsRoute
   '/patients': typeof PatientsRoute
+  '/payments': typeof PaymentsRoute
   '/settings': typeof SettingsRoute
   '/treatments': typeof TreatmentsRoute
+  '/unauthorized': typeof UnauthorizedRoute
+  '/user-management': typeof UserManagementRoute
   '/workflow': typeof WorkflowRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/billing': typeof BillingRoute
   '/calendar': typeof CalendarRoute
+  '/check-in': typeof CheckInRoute
+  '/ehr': typeof EhrRoute
+  '/login': typeof LoginRoute
+  '/medical-records': typeof MedicalRecordsRoute
+  '/my-appointments': typeof MyAppointmentsRoute
+  '/my-bookings': typeof MyBookingsRoute
   '/patients': typeof PatientsRoute
+  '/payments': typeof PaymentsRoute
   '/settings': typeof SettingsRoute
   '/treatments': typeof TreatmentsRoute
+  '/unauthorized': typeof UnauthorizedRoute
+  '/user-management': typeof UserManagementRoute
   '/workflow': typeof WorkflowRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/audit-logs'
+    | '/billing'
     | '/calendar'
+    | '/check-in'
+    | '/ehr'
+    | '/login'
+    | '/medical-records'
+    | '/my-appointments'
+    | '/my-bookings'
     | '/patients'
+    | '/payments'
     | '/settings'
     | '/treatments'
+    | '/unauthorized'
+    | '/user-management'
     | '/workflow'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/audit-logs'
+    | '/billing'
     | '/calendar'
+    | '/check-in'
+    | '/ehr'
+    | '/login'
+    | '/medical-records'
+    | '/my-appointments'
+    | '/my-bookings'
     | '/patients'
+    | '/payments'
     | '/settings'
     | '/treatments'
+    | '/unauthorized'
+    | '/user-management'
     | '/workflow'
   id:
     | '__root__'
     | '/'
+    | '/audit-logs'
+    | '/billing'
     | '/calendar'
+    | '/check-in'
+    | '/ehr'
+    | '/login'
+    | '/medical-records'
+    | '/my-appointments'
+    | '/my-bookings'
     | '/patients'
+    | '/payments'
     | '/settings'
     | '/treatments'
+    | '/unauthorized'
+    | '/user-management'
     | '/workflow'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditLogsRoute: typeof AuditLogsRoute
+  BillingRoute: typeof BillingRoute
   CalendarRoute: typeof CalendarRoute
+  CheckInRoute: typeof CheckInRoute
+  EhrRoute: typeof EhrRoute
+  LoginRoute: typeof LoginRoute
+  MedicalRecordsRoute: typeof MedicalRecordsRoute
+  MyAppointmentsRoute: typeof MyAppointmentsRoute
+  MyBookingsRoute: typeof MyBookingsRoute
   PatientsRoute: typeof PatientsRoute
+  PaymentsRoute: typeof PaymentsRoute
   SettingsRoute: typeof SettingsRoute
   TreatmentsRoute: typeof TreatmentsRoute
+  UnauthorizedRoute: typeof UnauthorizedRoute
+  UserManagementRoute: typeof UserManagementRoute
   WorkflowRoute: typeof WorkflowRoute
 }
 
@@ -115,6 +258,20 @@ declare module '@tanstack/react-router' {
       path: '/workflow'
       fullPath: '/workflow'
       preLoaderRoute: typeof WorkflowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user-management': {
+      id: '/user-management'
+      path: '/user-management'
+      fullPath: '/user-management'
+      preLoaderRoute: typeof UserManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/treatments': {
@@ -131,6 +288,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patients': {
       id: '/patients'
       path: '/patients'
@@ -138,11 +302,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatientsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-bookings': {
+      id: '/my-bookings'
+      path: '/my-bookings'
+      fullPath: '/my-bookings'
+      preLoaderRoute: typeof MyBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-appointments': {
+      id: '/my-appointments'
+      path: '/my-appointments'
+      fullPath: '/my-appointments'
+      preLoaderRoute: typeof MyAppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/medical-records': {
+      id: '/medical-records'
+      path: '/medical-records'
+      fullPath: '/medical-records'
+      preLoaderRoute: typeof MedicalRecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ehr': {
+      id: '/ehr'
+      path: '/ehr'
+      fullPath: '/ehr'
+      preLoaderRoute: typeof EhrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/check-in': {
+      id: '/check-in'
+      path: '/check-in'
+      fullPath: '/check-in'
+      preLoaderRoute: typeof CheckInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/calendar': {
       id: '/calendar'
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing': {
+      id: '/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof BillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit-logs': {
+      id: '/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/audit-logs'
+      preLoaderRoute: typeof AuditLogsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -157,10 +377,21 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditLogsRoute: AuditLogsRoute,
+  BillingRoute: BillingRoute,
   CalendarRoute: CalendarRoute,
+  CheckInRoute: CheckInRoute,
+  EhrRoute: EhrRoute,
+  LoginRoute: LoginRoute,
+  MedicalRecordsRoute: MedicalRecordsRoute,
+  MyAppointmentsRoute: MyAppointmentsRoute,
+  MyBookingsRoute: MyBookingsRoute,
   PatientsRoute: PatientsRoute,
+  PaymentsRoute: PaymentsRoute,
   SettingsRoute: SettingsRoute,
   TreatmentsRoute: TreatmentsRoute,
+  UnauthorizedRoute: UnauthorizedRoute,
+  UserManagementRoute: UserManagementRoute,
   WorkflowRoute: WorkflowRoute,
 }
 export const routeTree = rootRouteImport
