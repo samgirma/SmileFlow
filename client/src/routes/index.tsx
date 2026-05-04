@@ -2,15 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { PatientStatusCard } from "@/components/dashboard/PatientStatusCard";
 import { TreatmentPlanView } from "@/components/dashboard/TreatmentPlanView";
+import { LandingPage } from "@/components/landing/LandingPage";
 import { fetchAppointments, fetchTreatmentPlans } from "@/lib/api-service";
 import type { Appointment, TreatmentPlan } from "@/lib/mock-data";
 import { Users, CalendarCheck, Clock, TrendingUp } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — SmileFlow" },
-      { name: "description", content: "Clinic command center with real-time patient status and treatment plans." },
+      { title: "SmileFlow — Premium Dental Care" },
+      { name: "description", content: "Transform your smile with world-class dental care. From routine check-ups to advanced cosmetic procedures." },
     ],
   }),
   component: Index,
@@ -51,15 +53,25 @@ function StatCard({
 }
 
 function Index() {
+  const user = useAuthStore((s) => s.user);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
 
   useEffect(() => {
-    // TODO [PHP]: Replace with real API calls
-    fetchAppointments().then(setAppointments);
-    fetchTreatmentPlans().then(setTreatmentPlans);
-  }, []);
+    // Only fetch dashboard data if user is authenticated
+    if (user) {
+      // TODO [PHP]: Replace with real API calls
+      fetchAppointments().then(setAppointments);
+      fetchTreatmentPlans().then(setTreatmentPlans);
+    }
+  }, [user]);
 
+  // Show landing page for unauthenticated users
+  if (!user) {
+    return <LandingPage />;
+  }
+
+  // Show dashboard for authenticated users
   const todayAppointments = appointments.filter(
     (a) => a.date === "2026-05-04"
   );

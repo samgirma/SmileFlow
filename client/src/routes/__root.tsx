@@ -57,7 +57,7 @@ const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
 };
 
 /** Public routes that don't require authentication */
-const PUBLIC_ROUTES = ['/login', '/unauthorized'];
+const PUBLIC_ROUTES = ['/', '/login', '/unauthorized'];
 
 export const Route = createRootRoute({
   head: () => ({
