@@ -20,6 +20,7 @@
 
 import { create } from 'zustand';
 import config from './config/env';
+import { login as apiLogin } from './api-service';
 
 /** Supported RBAC roles — must match PHP backend's Role enum */
 export type UserRole = 'admin' | 'dentist' | 'receptionist' | 'patient';
@@ -38,11 +39,7 @@ interface AuthState {
   userRole: UserRole | null;
   isLoading: boolean;
 
-  /**
-   * Authenticate against the backend.
-   * TODO [PHP]: POST /api/auth/login with { email, password }
-   * Backend returns { user: AuthUser, token: string }
-   */
+  /** Authenticate against the backend */
   login: (email: string, password: string) => Promise<void>;
 
   /** Clear session and redirect to /login */
@@ -52,29 +49,6 @@ interface AuthState {
   checkAuth: () => void;
 }
 
-/**
- * Mock users for development — remove when connecting to PHP backend.
- * Each user demonstrates a different role for testing RBAC.
- */
-const MOCK_USERS: Record<string, { password: string; user: AuthUser }> = {
-  'admin@smileflow.com': {
-    password: 'admin123',
-    user: { id: '1', name: 'Dr. Admin', email: 'admin@smileflow.com', role: 'admin' },
-  },
-  'dentist@smileflow.com': {
-    password: 'dentist123',
-    user: { id: '2', name: 'Dr. Smith', email: 'dentist@smileflow.com', role: 'dentist' },
-  },
-  'reception@smileflow.com': {
-    password: 'reception123',
-    user: { id: '3', name: 'Jane Doe', email: 'reception@smileflow.com', role: 'receptionist' },
-  },
-  'patient@smileflow.com': {
-    password: 'patient123',
-    user: { id: '4', name: 'John Patient', email: 'patient@smileflow.com', role: 'patient' },
-  },
-};
-
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
@@ -82,82 +56,66 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   login: async (email: string, password: string) => {
-    /**
-     * TODO [PHP]: Replace this mock block with:
-     *
-     * const response = await fetch(`${BASE_URL}/auth/login`, {
-     *   method: 'POST',
-     *   headers: { 'Content-Type': 'application/json' },
-     *   body: JSON.stringify({ email, password }),
-     * });
-     *
-     * if (!response.ok) {
-     *   const err = await response.json();
-     *   throw new Error(err.message || 'Login failed');
-     * }
-     *
-     * const { user, token } = await response.json();
-     * localStorage.setItem('sf_token', token);
-     * set({ user, isAuthenticated: true, userRole: user.role, isLoading: false });
-     */
+    try {
+      const res = await apiLogin(email, password);
+      
+      localStorage.setItem(config.auth.tokenStorageKey, res.token);
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(res.user));
 
-    // Simulate network delay
-    await new Promise((r) => setTimeout(r, 500));
-
-    const entry = MOCK_USERS[email];
-    if (!entry || entry.password !== password) {
-      throw new Error('Invalid email or password');
+      set({
+        user: res.user,
+        isAuthenticated: true,
+        userRole: res.user.role,
+        isLoading: false,
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Login failed');
     }
-
-    const mockToken = `mock-jwt-${entry.user.role}-${Date.now()}`;
-    localStorage.setItem(config.auth.tokenStorageKey, mockToken);
-    localStorage.setItem(config.auth.userStorageKey, JSON.stringify(entry.user));
-
-    set({
-      user: entry.user,
-      isAuthenticated: true,
-      userRole: entry.user.role,
-      isLoading: false,
-    });
   },
 
   logout: () => {
     localStorage.removeItem(config.auth.tokenStorageKey);
     localStorage.removeItem(config.auth.userStorageKey);
     set({ user: null, isAuthenticated: false, userRole: null, isLoading: false });
+    
+    // Optionally hit the backend logout endpoint in the background
+    fetch(`${config.api.baseUrl}/logout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem(config.auth.tokenStorageKey) || ''}`,
+        'Accept': 'application/json'
+      }
+    }).catch(() => {});
   },
 
-  checkAuth: () => {
-    /**
-     * TODO [PHP]: Validate the stored token against the backend:
-     *
-     * const token = localStorage.getItem(config.auth.tokenStorageKey);
-     * if (!token) { set({ isLoading: false }); return; }
-     *
-     * const res = await fetch(`${config.api.baseUrl}/auth/me`, {
-     *   headers: { Authorization: `Bearer ${token}` },
-     * });
-     *
-     * if (res.ok) {
-     *   const { user } = await res.json();
-     *   set({ user, isAuthenticated: true, userRole: user.role, isLoading: false });
-     * } else {
-     *   localStorage.removeItem(config.auth.tokenStorageKey);
-     *   set({ isLoading: false });
-     * }
-     */
-    const stored = localStorage.getItem(config.auth.userStorageKey);
+  checkAuth: async () => {
     const token = localStorage.getItem(config.auth.tokenStorageKey);
-
-    if (stored && token) {
-      try {
-        const user = JSON.parse(stored) as AuthUser;
-        set({ user, isAuthenticated: true, userRole: user.role, isLoading: false });
-      } catch {
-        set({ isLoading: false });
-      }
-    } else {
+    
+    if (!token) {
       set({ isLoading: false });
+      return;
+    }
+
+    try {
+      // Validate token against backend
+      const res = await fetch(`${config.api.baseUrl}/user`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+      });
+
+      if (res.ok) {
+        const user = await res.json();
+        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(user));
+        set({ user, isAuthenticated: true, userRole: user.role, isLoading: false });
+      } else {
+        throw new Error('Invalid token');
+      }
+    } catch {
+      localStorage.removeItem(config.auth.tokenStorageKey);
+      localStorage.removeItem(config.auth.userStorageKey);
+      set({ isLoading: false, isAuthenticated: false, user: null, userRole: null });
     }
   },
 }));
