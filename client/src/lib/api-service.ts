@@ -57,7 +57,6 @@
  *
  */
 
-import { mockPatients, mockAppointments, mockWorkflowItems, mockTreatmentPlans } from './mock-data';
 import config from './config/env';
 
 /**
@@ -143,12 +142,7 @@ async function _apiFetch<T>(endpoint: string, options: RequestInit = {}): Promis
   }
 }
 
-/**
- * Simulate network delay for mock data (remove when using real API)
- */
-function mockDelay<T>(data: T, ms = 300): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(data), ms));
-}
+
 
 // =============================================================
 // API METHODS — Each maps to a Laravel route
@@ -159,7 +153,7 @@ function mockDelay<T>(data: T, ms = 300): Promise<T> {
  * TODO [PHP]: return _apiFetch('/patients');
  */
 export async function fetchPatients() {
-  return mockDelay(mockPatients);
+  return _apiFetch('/patients');
 }
 
 /**
@@ -167,8 +161,7 @@ export async function fetchPatients() {
  * TODO [PHP]: return _apiFetch(`/patients/${id}`);
  */
 export async function fetchPatientById(id: string) {
-  const patient = mockPatients.find(p => p.id === id);
-  return mockDelay(patient || null);
+  return _apiFetch(`/patients/${id}`);
 }
 
 /**
@@ -176,7 +169,7 @@ export async function fetchPatientById(id: string) {
  * TODO [PHP]: return _apiFetch('/appointments');
  */
 export async function fetchAppointments() {
-  return mockDelay(mockAppointments);
+  return _apiFetch('/appointments');
 }
 
 /**
@@ -184,8 +177,7 @@ export async function fetchAppointments() {
  * TODO [PHP]: return _apiFetch('/appointments', { method: 'POST', body: JSON.stringify(data) });
  */
 export async function createAppointment(data: Record<string, unknown>) {
-  console.log('[API] POST /appointments', data);
-  return mockDelay({ id: crypto.randomUUID(), ...data });
+  return _apiFetch('/appointments', { method: 'POST', body: JSON.stringify(data) });
 }
 
 /**
@@ -193,7 +185,7 @@ export async function createAppointment(data: Record<string, unknown>) {
  * TODO [PHP]: return _apiFetch('/workflow');
  */
 export async function fetchWorkflowItems() {
-  return mockDelay(mockWorkflowItems);
+  return _apiFetch('/workflow');
 }
 
 /**
@@ -201,8 +193,7 @@ export async function fetchWorkflowItems() {
  * TODO [PHP]: return _apiFetch(`/workflow/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
  */
 export async function updateWorkflowStatus(id: string, status: string) {
-  console.log(`[API] PATCH /workflow/${id}`, { status });
-  return mockDelay({ id, status });
+  return _apiFetch(`/workflow/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
 }
 
 /**
@@ -210,34 +201,19 @@ export async function updateWorkflowStatus(id: string, status: string) {
  * TODO [PHP]: return _apiFetch(`/treatment-plans/${patientId}`);
  */
 export async function fetchTreatmentPlans(patientId?: string) {
-  if (patientId) {
-    return mockDelay(mockTreatmentPlans.filter(tp => tp.patientId === patientId));
-  }
-  return mockDelay(mockTreatmentPlans);
+  const endpoint = patientId ? `/treatment-plans/${patientId}` : '/treatment-plans';
+  return _apiFetch(endpoint);
 }
 
 /**
  * POST /api/auth/login
  * TODO [PHP]: Uncomment and use real endpoint
  */
-export async function login(email: string, _password: string) {
-  if (config.development.mockApi) {
-    // Mock implementation for development
-    console.log('[API] POST /auth/login', { email });
-    const mockToken = 'mock-jwt-token-' + Date.now();
-    localStorage.setItem(config.auth.tokenStorageKey, mockToken);
-    return mockDelay({ token: mockToken, user: { email, name: 'Dr. Smith' } });
-  }
-
-  // TODO [PHP]: const res = await _apiFetch(config.api.authEndpoint, {
-  //   method: 'POST',
-  //   body: JSON.stringify({ email, password }),
-  // });
-  // localStorage.setItem(config.auth.tokenStorageKey, res.token);
-  // return res;
-  
-  console.log('[API] POST /auth/login', { email });
-  const mockToken = 'mock-jwt-token-' + Date.now();
-  localStorage.setItem(config.auth.tokenStorageKey, mockToken);
-  return mockDelay({ token: mockToken, user: { email, name: 'Dr. Smith' } });
+export async function login(email: string, password: string) {
+  const res: any = await _apiFetch('/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  localStorage.setItem(config.auth.tokenStorageKey, res.token);
+  return res;
 }
