@@ -1,0 +1,40 @@
+services:
+  # PostgreSQL Database only
+  postgres:
+    image: postgres:15-alpine
+    container_name: smileflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smileflow
+      POSTGRES_USER: smileflow_user
+      POSTGRES_PASSWORD: smileflow_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - smileflow-network
+
+  # Redis for caching and sessions (optional but recommended)
+  redis:
+    image: redis:7-alpine
+    container_name: smileflow-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - smileflow-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  smileflow-network:
+    driver: bridge
